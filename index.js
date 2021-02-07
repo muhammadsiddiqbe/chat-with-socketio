@@ -9,6 +9,8 @@ const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
 
+const PORT = process.env.PORT || 65001
+
 
 app.use(express.static(path.join(__dirname, '/public')))
 
@@ -59,4 +61,4 @@ io.on('connection', socket => {
 })
 
 
-server.listen(4000, () => console.log(`http://127.0.0.1:4000`))
+server.listen(PORT, () => console.log(`http://127.0.0.1:${PORT}`))
