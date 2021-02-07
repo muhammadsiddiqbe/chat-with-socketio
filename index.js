@@ -11,9 +11,18 @@ const io = socketio(server)
 app.use(express.static(path.join(__dirname, '/public')))
 
 
-io.on('connection', client => {
+io.on('connection', socket => {
 
-  console.log('New connection')
+  socket.emit('message', 'a new user joined to the chat')
+
+  socket.on('disconnect', () => {
+    io.emit('message', 'A user has left the chat')
+  })
+
+  socket.on('chatMessage', (msg) => {
+    io.emit('message', msg)
+  })
+
 })
 
 
