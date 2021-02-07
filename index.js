@@ -2,6 +2,8 @@ const socketio = require('socket.io')
 const express = require('express')
 const http = require('http')
 const path = require('path')
+const formatMessage = require('./utils/messages')
+const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./utils/users')
 
 const app = express()
 const server = http.createServer(app)
@@ -12,15 +14,44 @@ app.use(express.static(path.join(__dirname, '/public')))
 
 
 io.on('connection', socket => {
+  const botName = 'Bot'
 
-  socket.emit('message', 'a new user joined to the chat')
+  socket.on('joinRoom', ({ username, room}) => {
+    const user = userJoin(socket.id, username, room)
 
-  socket.on('disconnect', () => {
-    io.emit('message', 'A user has left the chat')
+    socket.join(user.room)
+
+    socket.emit('message', formatMessage(`${botName}: `, ` ${ username }, Welcome to the chat `))
+    socket.broadcast.to(user.room).emit('message', formatMessage('ChatCord bot: ', ` ${ username } joined to the chat`))
+
   })
 
+
+
   socket.on('chatMessage', (msg) => {
-    io.emit('message', msg)
+    const user = getCurrentUser(socket.id)
+
+    io.to(user.room).emit('message', formatMessage(`${user.username} `, msg))
+
+    // Send users number and room
+    io.to(user.room).emit('roomUsers', {
+      room: user.room,
+      users: getRoomUsers(user.room)
+    })
+  })
+
+  socket.on('disconnect', () => {
+    const user = userLeave(socket.id)
+
+    if (user) {
+      io.to(user.room).emit('message', formatMessage( `${botName}: `, `${user.username} has left the chat`))
+
+      io.to(user.room).emit('roomUsers', {
+        room: user.room,
+        users: getRoomUsers(user.room)
+      })
+    }
+
   })
 
 })
