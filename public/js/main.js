@@ -1,8 +1,8 @@
 const socket = io()
 const chatForm = document.getElementById('chat-form')
 const chatMessages = document.querySelector('.chat-messages')
-const roomName = document.querySelector('room-name')
-const userList = document.querySelector('users')
+const roomName = document.querySelector('#room-name')
+const userList = document.querySelector('#users')
 
 const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true
@@ -12,9 +12,9 @@ const { username, room } = Qs.parse(location.search, {
 socket.emit('joinRoom', { username, room })
 
 //get room and users
-socket.on('roomUsers', {
-  outPutRoomName()
-  outPutUsers()
+socket.on('roomUsers', ({ room, users}) => {
+  outPutRoomName(room)
+  outPutUsers(users)
 })
 
 
@@ -50,12 +50,14 @@ function outPutMessage(msg) {
 
 // Add roomname to DOM
 
-// function outPutRoomName(room) {
-//   // roomName.innerText = room
-// }
+function outPutRoomName(room) {
+  roomName.innerText = room
+}
 
-// // Add users to DOM
+// Add users to DOM
 
-// function outPutUsers() {
-
-// }
+function outPutUsers(users) {
+  userList.innerHTML= `
+    ${users.map(user => `<li>${user.username}</li>`).join('')}
+  `
+}

@@ -24,6 +24,12 @@ io.on('connection', socket => {
     socket.emit('message', formatMessage(`${botName}: `, ` ${ username }, Welcome to the chat `))
     socket.broadcast.to(user.room).emit('message', formatMessage('ChatCord bot: ', ` ${ username } joined to the chat`))
 
+    // Send users number and room
+    io.to(user.room).emit('roomUsers', {
+      room: user.room,
+      users: getRoomUsers(user.room)
+    })
+
   })
 
 
@@ -33,11 +39,7 @@ io.on('connection', socket => {
 
     io.to(user.room).emit('message', formatMessage(`${user.username} `, msg))
 
-    // Send users number and room
-    io.to(user.room).emit('roomUsers', {
-      room: user.room,
-      users: getRoomUsers(user.room)
-    })
+
   })
 
   socket.on('disconnect', () => {
